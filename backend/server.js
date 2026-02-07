@@ -190,6 +190,11 @@ app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+/** Catch-all 404: return JSON so Express never sends its default HTML error page (which sets CSP default-src 'none' and triggers extension/console errors). */
+app.use((req, res) => {
+    res.status(404).json({ success: false, error: 'Not found' });
+});
+
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ success: false, error: 'Something went wrong!' });
