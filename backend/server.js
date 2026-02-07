@@ -7,8 +7,38 @@ const stockService = require('./services/stockService');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            return callback(null, true);
+        }
+        if (origin.includes('vercel.app')) {
+            return callback(null, true);
+        }
+        callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+
+app.get('/', (req, res) => {
+    res.json({
+        success: true,
+        service: 'Portfolio Backend API',
+        endpoints: {
+            portfolio: '/api/portfolio',
+            portfolioLive: '/api/portfolio/live',
+            stock: '/api/stock/:symbol',
+            batchStocks: 'POST /api/stocks/batch',
+            health: '/health'
+        }
+    });
+});
 
 function transformPortfolioData(rawData) {
     const stocks = rawData.filter(row =>
@@ -190,7 +220,6 @@ app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-/** Catch-all 404: return JSON so Express never sends its default HTML error page (which sets CSP default-src 'none' and triggers extension/console errors). */
 app.use((req, res) => {
     res.status(404).json({ success: false, error: 'Not found' });
 });
