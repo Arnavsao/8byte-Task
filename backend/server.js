@@ -26,20 +26,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.json({
-        success: true,
-        service: 'Portfolio Backend API',
-        endpoints: {
-            portfolio: '/api/portfolio',
-            portfolioLive: '/api/portfolio/live',
-            stock: '/api/stock/:symbol',
-            batchStocks: 'POST /api/stocks/batch',
-            health: '/health'
-        }
-    });
-});
-
 function transformPortfolioData(rawData) {
     const stocks = rawData.filter(row =>
         row.__EMPTY &&
@@ -91,6 +77,20 @@ function getSectorForStock(name) {
 
     return 'Others';
 }
+
+app.get('/', (req, res) => {
+    res.json({
+        success: true,
+        service: 'Portfolio Backend API',
+        endpoints: {
+            portfolio: '/api/portfolio',
+            portfolioLive: '/api/portfolio/live',
+            stock: '/api/stock/:symbol',
+            batchStocks: 'POST /api/stocks/batch',
+            health: '/health'
+        }
+    });
+});
 
 app.get('/api/portfolio', (req, res) => {
     try {
@@ -229,8 +229,10 @@ app.use((err, req, res, next) => {
     res.status(500).json({ success: false, error: 'Something went wrong!' });
 });
 
-app.listen(PORT, () => {
-    console.log(`Portfolio Backend Server running on port ${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Portfolio Backend Server running on port ${PORT}`);
+    });
+}
 
 module.exports = app;
